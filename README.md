@@ -1,6 +1,6 @@
 # Vmonkey
 
-TODO: Write a gem description
+A library of utility methods for rbvmomi.  This is an early work in progress.
 
 ## Installation
 
