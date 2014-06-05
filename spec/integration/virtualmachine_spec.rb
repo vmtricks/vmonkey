@@ -4,24 +4,24 @@ describe RbVmomi::VIM::VirtualMachine do
   before :all do
     @monkey ||= VMonkey.connect
     @template = @monkey.vm VM_SPEC_OPTS[:template_path]
-    @spec_vm = "#{VM_SPEC_OPTS[:working_folder]}/vmonkey_spec"
+    @vm_path = "#{VM_SPEC_OPTS[:working_folder]}/vmonkey_spec"
   end
 
-  describe '#clone_params' do
+  describe '#_clone_params' do
     context 'with Folder destination' do
-      subject { @params ||= @template.clone_params(@spec_vm.basename, @monkey.get(@spec_vm.parent), {}) }
+      subject { @params ||= @template._clone_params(@vm_path.basename, @monkey.get(@vm_path.parent), {}) }
 
-      it { expect(subject[:name]).to eq @spec_vm.basename }
-      it { expect(subject[:folder].name).to eq @spec_vm.parent.basename }
+      it { expect(subject[:name]).to eq @vm_path.basename }
+      it { expect(subject[:folder].name).to eq @vm_path.parent.basename }
       it { expect(subject[:spec].powerOn).to eq false }
       it { expect(subject[:spec].template).to eq false }
       it { expect(subject[:spec].location.pool.name).to eq 'Resources' }
     end
 
     context 'with vApp destination' do
-      subject { @params ||= @template.clone_params(@spec_vm.basename, @monkey.vapp(VM_SPEC_OPTS[:vapp_path]), {}) }
+      subject { @params ||= @template._clone_params(@vm_path.basename, @monkey.vapp(VM_SPEC_OPTS[:vapp_path]), {}) }
 
-      it { expect(subject[:name]).to eq @spec_vm.basename }
+      it { expect(subject[:name]).to eq @vm_path.basename }
       it { expect(subject[:folder].name).to eq VM_SPEC_OPTS[:vapp_path].parent.basename }
       it { expect(subject[:spec].powerOn).to eq false }
       it { expect(subject[:spec].template).to eq false }
@@ -36,9 +36,9 @@ describe RbVmomi::VIM::VirtualMachine do
     context 'with config' do
       subject do
         @params ||=
-          @template.clone_params(
-            @spec_vm.basename,
-            @monkey.get(@spec_vm.parent),
+          @template._clone_params(
+            @vm_path.basename,
+            @monkey.get(@vm_path.parent),
             customization_spec: VM_SPEC_OPTS[:customization_spec],
             config: {
               annotation: 'an annotation',
@@ -54,24 +54,35 @@ describe RbVmomi::VIM::VirtualMachine do
     end
   end
 
-  describe '#clone' do
-    context 'to a Folder' do
-      before :all do
-        @template.clone_to @spec_vm
-      end
+  context 'with a cloned VM' do
+    before(:all) { @spec_vm = @template.clone_to @vm_path }
+    after(:all)  { @spec_vm.destroy }
 
-      subject { @monkey.vm @spec_vm }
-
-      it { should_not be_nil }
-
-      after :all do
-        (@monkey.vm @spec_vm).destroy
+    describe '#clone' do
+      context 'to a Folder' do
+        subject { @monkey.vm @vm_path }
+        it { should_not be_nil }
       end
     end
 
+    describe '#property' do
+      before(:all) do
+        @spec_vm.property :spec_prop, 'xyzzy'
+        @spec_vm.property :spec_prop2, 'abc123'
+        @spec_vm.property :spec_prop2, 'abc456'
+      end
+
+      subject { @spec_vm }
+      it { expect(@spec_vm.property :spec_prop).to eq 'xyzzy' }
+      it { expect(@spec_vm.property :spec_prop2).to eq 'abc456' }
+      it { expect(@spec_vm.property :spec_non_existent).to be_nil }
+    end
+  end
+
+  describe '#clone' do
     context 'to a vApp' do
       before :all do
-        @vm_name_in_vapp = "#{@spec_vm.basename}-vapp"
+        @vm_name_in_vapp = "#{@vm_path.basename}-vapp"
         @template.clone_to "#{VM_SPEC_OPTS[:vapp_path]}/#{@vm_name_in_vapp}"
         @spec_vapp = @monkey.vapp VM_SPEC_OPTS[:vapp_path]
       end

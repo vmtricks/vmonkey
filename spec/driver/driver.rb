@@ -6,7 +6,12 @@ monkey = VMonkey.connect
 # puts monkey.vm('/Templates/c64.medium').name.inspect
 # puts monkey.vapp('/RallyVM/vapp_ci-lastSuccessfulBuild').name.inspect
 
-template = monkey.vm '/Templates/c64.medium'
+template = monkey.vm '/RallyVM/rallyvm-monitor-ondemand-lastTested'
+puts template.property(:boot_for_test).inspect
+puts template.property(:xyzzy).inspect
+
+exit
+
 # puts template.name
 # puts template.config.annotation
 
@@ -25,12 +30,17 @@ template = monkey.vm '/Templates/c64.medium'
 # box.destroy
 
 box = template.clone_to '/Template CI/monkey_vapp/monkey_driver'
-# box.destroy
+begin
+  box.property
+  box.property :a
+  box.property :b, 'c'
+ensure
+  box.destroy
+end
 
 # vapp = monkey.vapp 'Template CI/monkey_vapp'
 # box = template.clone_to '/RallyVM/vapp_ci-lastSuccessfulBuild/some_box'
 
-exit
 
 puts box.name
 

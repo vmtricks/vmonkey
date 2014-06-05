@@ -11,20 +11,73 @@ class RbVmomi::VIM::VirtualMachine
       raise "Cannot clone_to [#{dest.pretty_path}] - destination must specify a Folder or VirtualApp"
     end
 
-    params = clone_params(path.basename, dest, opts)
+    params = _clone_params(path.basename, dest, opts)
 
     self.CloneVM_Task(params).wait_for_completion
   end
 
-  def clone_params(vm_name, dest, opts)
+  def property(*args)
+    case args.size
+    when 1
+      read_property(*args)
+    when 2
+      set_property(*args)
+    else
+      raise ArgumentError.new("wrong number of arguments (#{args.size} for 1 or 2)")
+    end
+  end
+
+  def find_property(name)
+    config.vAppConfig.property.find { |p| p.props[:id] == name.to_s  }
+  end
+
+  def read_property(name)
+    p = find_property(name)
+    p[:value] unless p.nil?
+  end
+
+  def set_property(name, value)
+    if config.vAppConfig && config.vAppConfig.property
+      existing_property = find_property(name)
+    end
+
+    if existing_property
+      operation = 'edit'
+      property_key = existing_property.props[:key]
+    else
+      operation = 'add'
+      property_key = name.object_id
+    end
+
+    vm_config_spec = RbVmomi::VIM.VirtualMachineConfigSpec(
+      vAppConfig: RbVmomi::VIM.VmConfigSpec(
+        property: [
+          RbVmomi::VIM.VAppPropertySpec(
+            operation: operation,
+            info: {
+              key: property_key,
+              id: name.to_s,
+              type: 'string',
+              userConfigurable: true,
+              value: value
+              })]))
+
+    if config.vAppConfig.nil? || config.vAppConfig.ovfEnvironmentTransport.empty?
+      vm_config_spec[:vAppConfig][:ovfEnvironmentTransport] = ['com.vmware.guestInfo']
+    end
+
+    ReconfigVM_Task( spec: vm_config_spec ).wait_for_completion
+  end
+
+  def _clone_params(vm_name, dest, opts)
     {
       name: vm_name,
       folder: dest.vm_folder,
-      spec: clone_spec(dest, opts)
+      spec: _clone_spec(dest, opts)
     }
   end
 
-  def clone_spec(dest, opts)
+  def _clone_spec(dest, opts)
     opts[:config] ||= {}
 
     clone_spec = RbVmomi::VIM.VirtualMachineCloneSpec(
