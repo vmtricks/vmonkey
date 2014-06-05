@@ -6,5 +6,7 @@ describe VMonkey do
 
     it { should_not be_nil }
     its(:dc) { should_not be_nil }
+    its(:cluster) { should_not be_nil }
   end
 end
+

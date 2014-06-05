@@ -2,6 +2,19 @@ require_relative 'spec_helper'
 
 describe VMonkey do
   describe '#connect' do
+    before(:each) do
+      @dc = double
+      @cluster = double
+      @dc.stub(:find_compute_resource).and_return @cluster
+      @vim = double
+      @vim.stub(:dc).and_return @dc
+      @vim.stub :dc=
+      @vim.stub :cluster=
+      @vim.stub :opts=
+      @vim.stub_chain(:serviceInstance, :find_datacenter).and_return @dc
+      RbVmomi::VIM.stub(:connect).and_return @vim
+    end
+
     context 'with options' do
       CONNECT_OPTS = {
           host: 'host',
@@ -13,13 +26,7 @@ describe VMonkey do
           cluster: 'cluster'
           }
 
-      before(:each) do
-        @dc = double()
-        @vim = double()
-        @vim.stub(:dc=)
-        @vim.stub_chain(:serviceInstance, :find_datacenter).and_return(@dc)
-        RbVmomi::VIM.stub(:connect).and_return(@vim)
-      end
+      before(:each) { @vim.stub(:opts).and_return CONNECT_OPTS }
 
       after(:each) { VMonkey.connect(CONNECT_OPTS) }
 
@@ -49,12 +56,7 @@ describe VMonkey do
 
       before(:each) do
         YAML.stub(:load_file).and_return(VMONKEY_YML)
-
-        @dc = double()
-        @vim = double()
-        @vim.stub(:dc=)
-        @vim.stub_chain(:serviceInstance, :find_datacenter).and_return(@dc)
-        RbVmomi::VIM.stub(:connect).and_return(@vim)
+        @vim.stub(:opts).and_return CONNECT_OPTS
       end
 
       after(:each) { VMonkey.connect }
@@ -71,6 +73,6 @@ describe VMonkey do
         it { should receive(:dc=).with(@dc) }
       end
     end
-  end
 
+  end
 end

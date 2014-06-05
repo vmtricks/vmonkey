@@ -10,3 +10,20 @@ module VMonkey
     RbVmomi::VIM.monkey_connect(opts)
   end
 end
+
+class String
+  def parent
+    p = self.split('/')[0...-1].join('/')
+    p == '' ? '/' : p
+  end
+
+  def basename
+    p = self.split('/').last
+  end
+end
+
+class RbVmomi::BasicTypes::ManagedObject
+  def monkey
+    _connection
+  end
+end

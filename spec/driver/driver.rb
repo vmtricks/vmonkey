@@ -2,32 +2,41 @@ require_relative '../../lib/vmonkey'
 
 monkey = VMonkey.connect
 
-puts monkey.folder('/Templates').name.inspect
-puts monkey.vm('/Templates/c64.medium').name.inspect
-puts monkey.template('/Templates/c64.medium').name.inspect
+# puts monkey.folder('/Templates').name.inspect
+# puts monkey.vm('/Templates/c64.medium').name.inspect
+# puts monkey.vapp('/RallyVM/vapp_ci-lastSuccessfulBuild').name.inspect
 
-## specializations of #get
-monkey.folder '/path/to/a/folder'
-monkey.vm '/path/to/a/vm'
-monkey.template '/path/to/a/vm_template'
-monkey.vapp '/path/to/a/vapp'
+template = monkey.vm '/Templates/c64.medium'
+# puts template.name
+# puts template.config.annotation
 
-template = monkey.template '/Templates/c64.medium'
-puts template.name
-puts template.path
-puts template.folder.name
-puts template.folder.path
-puts template.template
-puts template.annotation
+# puts monkey.dc.name.inspect
+# puts monkey.dc.find_pool.name
+# puts monkey.dc.find_pool('/Engineering').name
+# puts monkey.dc.find_pool('/Engineering/vapp_ci-lastTested').name
 
-box = template.clone '/Template CI/monkey_driver'
+# puts monkey.get('/Template CI/monkey_box'.parent).pretty_path
+# puts monkey.get('/RallyVM_CI/vapp_ci-lastTested/monkey_box'.parent).pretty_path
+
+# box = monkey.vm '/Template CI/monkey_driver'
+# box.destroy unless box.nil?
+
+# box = template.clone_to '/Template CI/monkey_driver'
+# box.destroy
+
+box = template.clone_to '/Template CI/monkey_vapp/monkey_driver'
+# box.destroy
+
+# vapp = monkey.vapp 'Template CI/monkey_vapp'
+# box = template.clone_to '/RallyVM/vapp_ci-lastSuccessfulBuild/some_box'
+
+exit
+
 puts box.name
-puts box.path
-puts box.folder.name
-puts box.folder.path
 
-puts box.annotation
-box.annotation 'Hello world'
+
+puts box.config.annotation
+box.config.annotation 'Hello world'
 
 box.property :boot_for_test, 'true'
 puts box.property :boot_for_test
