@@ -65,6 +65,13 @@ describe RbVmomi::VIM::VirtualMachine do
       end
     end
 
+    describe '#annotation=' do
+      it 'sets the annotation' do
+        @spec_vm.annotation = 'xyzzy'
+        expect(@spec_vm.annotation).to eq 'xyzzy'
+      end
+    end
+
     describe '#property' do
       before(:all) do
         @spec_vm.property :prop, 'xyzzy'
@@ -72,7 +79,6 @@ describe RbVmomi::VIM::VirtualMachine do
         @spec_vm.property :prop2, 'abc456'
       end
 
-      subject { @spec_vm }
       it { expect(@spec_vm.property :prop).to eq 'xyzzy' }
       it { expect(@spec_vm.property :prop2).to eq 'abc456' }
       it { expect(@spec_vm.property :xyzzy).to be_nil }

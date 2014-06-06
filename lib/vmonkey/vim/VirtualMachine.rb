@@ -16,6 +16,14 @@ class RbVmomi::VIM::VirtualMachine
     self.CloneVM_Task(params).wait_for_completion
   end
 
+  def annotation
+    config.annotation
+  end
+
+  def annotation=(value)
+    ReconfigVM_Task(spec: RbVmomi::VIM.VirtualMachineConfigSpec(annotation: value)).wait_for_completion
+  end
+
   def property(*args)
     case args.size
     when 1
@@ -45,6 +53,18 @@ class RbVmomi::VIM::VirtualMachine
     else
       Rename_Task(newName: path.basename).wait_for_completion
     end
+  end
+
+  unless self.method_defined? :guest_ip
+    ## backported from rbvmomi 1.8 for rbvmomi 1.5 support
+    def guest_ip 
+      g = self.guest
+      if g.ipAddress && (g.toolsStatus == "toolsOk" || g.toolsStatus == "toolsOld")
+        g.ipAddress
+      else
+        nil
+      end
+    end  
   end
 
   def move_to!(path)
