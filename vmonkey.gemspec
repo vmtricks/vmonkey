@@ -6,8 +6,8 @@ require 'vmonkey/version'
 Gem::Specification.new do |spec|
   spec.name          = 'vmonkey'
   spec.version       = Vmonkey::VERSION
-  spec.authors       = ['Dave Smith', 'Brian Dupras']
-  spec.email         = ['dsmith@rallydev.com', 'brian@duprasville.com']
+  spec.authors       = ['Brian Dupras', 'Dave Smith']
+  spec.email         = ['brian@duprasville.com', 'dsmith@rallydev.com']
   spec.summary       = %q{ simple to use vsphere methods }
   spec.description   = %q{ simple to use vsphere methods }
   spec.homepage      = 'https://github.com/something/vmonkey'
