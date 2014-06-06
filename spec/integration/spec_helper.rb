@@ -7,7 +7,9 @@ instructions = "
 
     - On your vSphere system
       + A VM or Template from which VMs will be cloned (:template_path)
-      + A working Folder into which cloned VMs will be placed (:working_folder)
+        (Clones of this VM must listen on TCP port 22 on bootup)
+      + A working Folder into which VMs will be cloned (:working_folder)
+      + A working Folder into which VM will be moved (:working_folder2)
       + An empty vApp into which cloned VMs will be placed (:vapp_path)
       + A Customization Spec which will be applied to cloned VMs (:customization_spec)
 
@@ -22,6 +24,7 @@ instructions = "
     spec:
       :template_path: /path/to/a/vm_or_template
       :working_folder: /path/to/a/folder
+      :working_folder2: /path/to/another/folder
       :vapp_pool_path: /cluster_name/monkey_vapp
       :vapp_path: /path/to/a/vapp
       :customization_spec: name-of-a-cust-spec
@@ -32,6 +35,7 @@ raise instructions unless File.exists? ENV['VMONKEY_YML']
 monkey = VMonkey.connect
 VM_SPEC_OPTS = monkey.opts[:spec]
 raise instructions unless monkey.folder VM_SPEC_OPTS[:working_folder]
+raise instructions unless monkey.folder VM_SPEC_OPTS[:working_folder2]
 raise instructions unless monkey.vm VM_SPEC_OPTS[:template_path]
 raise instructions unless monkey.vapp VM_SPEC_OPTS[:vapp_path]
 raise instructions unless monkey.dc.find_pool VM_SPEC_OPTS[:vapp_pool_path]

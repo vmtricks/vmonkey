@@ -2,7 +2,7 @@ class RbVmomi::VIM::VirtualMachine
 
   def destroy
     self.PowerOffVM_Task.wait_for_completion unless runtime.powerState == 'poweredOff'
-    self.Destroy_Task
+    self.Destroy_Task.wait_for_completion
   end
 
   def clone_to(path, opts = {})
@@ -29,6 +29,60 @@ class RbVmomi::VIM::VirtualMachine
 
   def property!(name)
     read_property(name) || raise("vApp Property not found. [#{name}]")
+  end
+
+  def move_to(path)
+    monkey.vm(path) && raise("VirtualMachine already exists. [#{path}]")
+    rename = name != path.basename
+
+    to_folder = monkey.folder! path.parent
+    reparent = parent != to_folder
+
+    if reparent
+      Rename_Task(newName: "#{path.basename}-tmp").wait_for_completion if rename
+      to_folder.MoveIntoFolder_Task(list: [self]).wait_for_completion
+      Rename_Task(newName: path.basename).wait_for_completion if rename
+    else
+      Rename_Task(newName: path.basename).wait_for_completion
+    end
+  end
+
+  def move_to!(path)
+    dest_vm = monkey.vm(path)
+    dest_vm.destroy if dest_vm
+
+    move_to(path)
+  end
+
+  def port_ready?(port)
+    ip = guest_ip or return false
+    tcp_socket = TCPSocket.new(ip, port)
+    readable = IO.select([tcp_socket], nil, nil, 5)
+    if readable
+      true
+    else
+      false
+    end
+  rescue Errno::ETIMEDOUT, Errno::EPERM, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::ENETUNREACH
+    false
+  ensure
+    tcp_socket && tcp_socket.close
+  end
+
+  def wait_for_port(port)
+    sleep 2 until port_ready?(port)
+  end
+
+  def stop
+    return if runtime.powerState == 'poweredOff'
+    ShutdownGuest
+    sleep 2 until runtime.powerState == 'poweredOff'
+  rescue
+    PowerOffVM_Task().wait_for_completion unless runtime.powerState == 'poweredOff'
+  end
+
+  def start
+    PowerOnVM_Task().wait_for_completion unless runtime.powerState == 'poweredOn'
   end
 
   def find_property(name)

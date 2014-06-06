@@ -83,6 +83,105 @@ describe RbVmomi::VIM::VirtualMachine do
         expect { @spec_vm.property! :xyzzy }.to raise_error RuntimeError
       end
     end
+
+    describe '#move_to' do
+      it 'should raise a RuntimeError when given a path of an existing VM' do
+        expect { @spec_vm.move_to @vm_path }.to raise_error RuntimeError
+      end
+
+      it 'should move a vm to a new name in the same folder' do
+        parent = @spec_vm.parent
+
+        @spec_vm.move_to "#{@vm_path}-moved"
+        expect(@spec_vm.name).to eq "#{@vm_path.basename}-moved"
+        expect(@spec_vm.parent).to eq parent
+
+        @spec_vm.move_to @vm_path
+        expect(@spec_vm.name).to eq @vm_path.basename
+        expect(@spec_vm.parent).to eq parent
+      end
+
+      it 'should move a vm to the same name in a new folder' do
+        from_folder = @spec_vm.parent
+        from_name = @spec_vm.name
+        to_path = "#{VM_SPEC_OPTS[:working_folder2]}/#{@vm_path.basename}"
+        to_folder = @monkey.folder VM_SPEC_OPTS[:working_folder2]
+
+        @spec_vm.move_to to_path
+        expect(@spec_vm.name).to eq from_name
+        expect(@spec_vm.parent).to eq to_folder
+
+        @spec_vm.move_to @vm_path
+        expect(@spec_vm.name).to eq from_name
+        expect(@spec_vm.parent).to eq from_folder
+      end
+
+      it 'should move a vm to a new name in a new folder' do
+        from_folder = @spec_vm.parent
+        from_name = @spec_vm.name
+        to_name = "#{@vm_path.basename}-different"
+        to_path = "#{VM_SPEC_OPTS[:working_folder2]}/#{to_name}"
+        to_folder = @monkey.folder VM_SPEC_OPTS[:working_folder2]
+
+        @spec_vm.move_to to_path
+        expect(@spec_vm.name).to eq to_name
+        expect(@spec_vm.parent).to eq to_folder
+
+        @spec_vm.move_to @vm_path
+        expect(@spec_vm.name).to eq from_name
+        expect(@spec_vm.parent).to eq from_folder
+      end
+    end
+
+    describe '#move_to!' do
+      before(:all) do
+        @other_path = "#{@vm_path}-other"
+        @other_vm = @spec_vm.clone_to @other_path
+      end
+      
+      after(:all) do
+        other_vm = @monkey.vm @other_path
+        other_vm.destroy if other_vm
+      end
+
+      it 'should overwrite a VM when given a path of an existing VM' do
+        @spec_vm.move_to! @other_path
+        expect(@monkey.vm @other_path).to_not be_nil
+
+        @spec_vm.move_to @vm_path
+        expect(@monkey.vm @other_path).to be_nil
+      end
+    end
+
+    describe '#stop' do
+      it 'should return successfully when the VM is already powered off' do
+        expect { @spec_vm.stop }.to_not raise_error
+      end
+    end
+
+    describe '#port_ready?' do
+      it 'should be false when the VM is powered off' do
+        expect( @spec_vm.port_ready? 22 ).to be_false
+      end
+    end
+
+    context 'that has had #start called' do
+      before(:all) { @spec_vm.start }
+
+      describe '#port_ready?' do
+        it 'should be false immediately following start' do
+          expect(@spec_vm.port_ready? 22).to be_false
+        end
+
+        it 'should be true after wait_for_port' do
+          @spec_vm.wait_for_port 22
+          expect(@spec_vm.port_ready? 22).to be_true
+        end
+      end
+
+      after(:all) { @spec_vm.stop }
+    end
+
   end
 
   describe '#clone' do
