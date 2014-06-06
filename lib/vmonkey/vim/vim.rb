@@ -21,12 +21,24 @@ module RbVmomi
       dc.vmFolder.traverse path, RbVmomi::VIM::Folder
     end
 
+    def folder!(path)
+      folder(path) || raise("Folder not found. [#{path}]")
+    end
+
     def vm(path)
       dc.vmFolder.traverse path, RbVmomi::VIM::VirtualMachine
     end
 
+    def vm!(path)
+      vm(path) || raise("VirtualMachine not found. [#{path}]")
+    end
+
     def vapp(path)
       dc.vmFolder.traverse path, RbVmomi::VIM::VirtualApp
+    end
+
+    def vapp!(path)
+      vapp(path) || raise("VirtualApp not found. [#{path}]")
     end
 
     def get(path)

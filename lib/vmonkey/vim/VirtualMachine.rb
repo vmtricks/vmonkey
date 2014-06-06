@@ -27,13 +27,17 @@ class RbVmomi::VIM::VirtualMachine
     end
   end
 
+  def property!(name)
+    read_property(name) || raise("vApp Property not found. [#{name}]")
+  end
+
   def find_property(name)
     config.vAppConfig.property.find { |p| p.props[:id] == name.to_s  }
   end
 
   def read_property(name)
     p = find_property(name)
-    p[:value] unless p.nil?
+    p.nil? ? nil : p[:value]
   end
 
   def set_property(name, value)

@@ -12,6 +12,12 @@ describe RbVmomi::VIM do
     its(:name) { should == VM_SPEC_OPTS[:working_folder].split('/').last }
   end
 
+  describe '#folder!' do
+    it 'should raise a RuntimeError given a path to a non-existent folder' do
+      expect { @monkey.folder! '/xyzzy' }.to raise_error RuntimeError
+    end
+  end
+
   describe '#vm' do
     subject { @vm ||= @monkey.vm VM_SPEC_OPTS[:template_path] }
 
@@ -19,11 +25,23 @@ describe RbVmomi::VIM do
     its(:name) { should == VM_SPEC_OPTS[:template_path].split('/').last }
   end
 
+  describe '#vm!' do
+    it 'should raise a RuntimeError given a path to a non-existent vm' do
+      expect { @monkey.vm! '/xyzzy' }.to raise_error RuntimeError
+    end
+  end
+
   describe '#vapp' do
     subject { @vapp ||= @monkey.vapp VM_SPEC_OPTS[:vapp_path] }
 
     it { should_not be_nil }
     its(:name) { should == VM_SPEC_OPTS[:vapp_path].split('/').last }
+  end
+
+  describe '#vapp!' do
+    it 'should raise a RuntimeError given a path to a non-existent vapp' do
+      expect { @monkey.vapp! '/xyzzy' }.to raise_error RuntimeError
+    end
   end
 
   describe '#get' do

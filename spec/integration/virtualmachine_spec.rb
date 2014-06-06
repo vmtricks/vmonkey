@@ -67,15 +67,21 @@ describe RbVmomi::VIM::VirtualMachine do
 
     describe '#property' do
       before(:all) do
-        @spec_vm.property :spec_prop, 'xyzzy'
-        @spec_vm.property :spec_prop2, 'abc123'
-        @spec_vm.property :spec_prop2, 'abc456'
+        @spec_vm.property :prop, 'xyzzy'
+        @spec_vm.property :prop2, 'abc123'
+        @spec_vm.property :prop2, 'abc456'
       end
 
       subject { @spec_vm }
-      it { expect(@spec_vm.property :spec_prop).to eq 'xyzzy' }
-      it { expect(@spec_vm.property :spec_prop2).to eq 'abc456' }
-      it { expect(@spec_vm.property :spec_non_existent).to be_nil }
+      it { expect(@spec_vm.property :prop).to eq 'xyzzy' }
+      it { expect(@spec_vm.property :prop2).to eq 'abc456' }
+      it { expect(@spec_vm.property :xyzzy).to be_nil }
+    end
+
+    describe '#property!' do
+      it 'should raise a RuntimeError given a path to a non-existent property' do
+        expect { @spec_vm.property! :xyzzy }.to raise_error RuntimeError
+      end
     end
   end
 
