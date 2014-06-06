@@ -1,4 +1,4 @@
-require_relative '../../lib/vmonkey'
+require_relative '../lib/vmonkey'
 
 instructions = "
   For the integration tests to run, you need:
