@@ -95,7 +95,7 @@ class RbVmomi::VIM::VirtualMachine
 
   def stop
     return if runtime.powerState == 'poweredOff'
-    ShutdownGuest
+    ShutdownGuest()
     sleep 2 until runtime.powerState == 'poweredOff'
   rescue
     PowerOffVM_Task().wait_for_completion unless runtime.powerState == 'poweredOff'
