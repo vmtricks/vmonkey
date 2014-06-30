@@ -3,6 +3,7 @@ require_relative 'spec_helper'
 describe RbVmomi::VIM do
   before :all do
     @monkey ||= VMonkey.connect
+    @template ||= @monkey.vm! VM_SPEC_OPTS[:template_path]
   end
 
   describe '#folder' do
@@ -28,6 +29,42 @@ describe RbVmomi::VIM do
   describe '#vm!' do
     it 'should raise a RuntimeError given a path to a non-existent vm' do
       expect { @monkey.vm! '/xyzzy' }.to raise_error RuntimeError
+    end
+  end
+
+  context 'with a cloned VM' do
+    before(:all) do
+      @vm_path = "#{VM_SPEC_OPTS[:working_folder]}/vmonkey_vim_spec"
+      @spec_vm = @template.clone_to @vm_path
+    end
+    after(:all)  { @spec_vm.destroy }
+
+    describe '#vm_by_uuid' do
+      before(:all) { @uuid ||= @spec_vm.config.uuid }
+      subject { @vm ||= @monkey.vm_by_uuid @uuid }
+
+      it { should_not be_nil }
+      its(:name) { should == @spec_vm.name }
+    end
+
+    describe '#vm_by_uuid!' do
+      it 'should raise a RuntimeError given a UUID of a non-existent vm' do
+        expect { @monkey.vm_by_uuid! 'xyzzy' }.to raise_error RuntimeError
+      end
+    end
+
+    describe '#vm_by_instance_uuid' do
+      before(:all) { @instance_uuid ||= @spec_vm.config.instanceUuid }
+      subject { @vm ||= @monkey.vm_by_instance_uuid @instance_uuid }
+
+      it { should_not be_nil }
+      its(:name) { should == @spec_vm.name }
+    end
+
+    describe '#vm_by_instance_uuid!' do
+      it 'should raise a RuntimeError given a UUID of a non-existent vm' do
+        expect { @monkey.vm_by_instance_uuid! 'xyzzy' }.to raise_error RuntimeError
+      end
     end
   end
 

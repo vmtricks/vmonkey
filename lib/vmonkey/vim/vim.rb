@@ -33,6 +33,22 @@ module RbVmomi
       vm(path) || raise("VirtualMachine not found. [#{path}]")
     end
 
+    def vm_by_uuid(uuid)
+      dc.vmFolder.findByUuid uuid, RbVmomi::VIM::VirtualMachine, dc
+    end
+
+    def vm_by_uuid!(uuid)
+      vm_by_uuid(uuid) || raise("VirtualMachine not found. [#{uuid}]")
+    end
+
+    def vm_by_instance_uuid(uuid)
+      dc.vmFolder.findByInstanceUuid uuid
+    end
+
+    def vm_by_instance_uuid!(uuid)
+      vm_by_instance_uuid(uuid) || raise("VirtualMachine not found. [#{uuid}]")
+    end
+
     def vapp(path)
       dc.vmFolder.traverse path, RbVmomi::VIM::VirtualApp
     end
