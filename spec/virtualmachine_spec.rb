@@ -144,7 +144,7 @@ describe RbVmomi::VIM::VirtualMachine do
         @other_path = "#{@vm_path}-other"
         @other_vm = @spec_vm.clone_to @other_path
       end
-      
+
       after(:all) do
         other_vm = @monkey.vm @other_path
         other_vm.destroy if other_vm
@@ -174,14 +174,33 @@ describe RbVmomi::VIM::VirtualMachine do
     context 'that has had #start called' do
       before(:all) { @spec_vm.start }
 
-      describe '#port_ready?' do
-        it 'should be false immediately following start' do
-          expect(@spec_vm.port_ready? 22).to be_false
+      context 'immediately following start' do
+        describe '#ready?' do
+          it 'should be false' do
+            expect(@spec_vm.ready?).to be_false
+          end
         end
 
-        it 'should be true after wait_for_port' do
-          @spec_vm.wait_for_port 22
-          expect(@spec_vm.port_ready? 22).to be_true
+        describe '#port_ready?' do
+          it 'should be false' do
+            expect(@spec_vm.port_ready? 22).to be_false
+          end
+        end
+      end
+
+      context 'following wait_for_port' do
+        before(:all) { @spec_vm.wait_for_port 22 }
+
+        describe '#ready?' do
+          it 'should be true' do
+            expect(@spec_vm.ready?).to be_true
+          end
+        end
+
+        describe '#port_ready?' do
+          it 'should be true' do
+            expect(@spec_vm.port_ready? 22).to be_true
+          end
         end
       end
 
