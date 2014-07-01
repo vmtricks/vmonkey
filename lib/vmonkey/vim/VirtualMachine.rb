@@ -8,7 +8,7 @@ class RbVmomi::VIM::VirtualMachine
   def clone_to(path, opts = {})
     dest = monkey.get(path.parent)
     unless dest.is_a? RbVmomi::VIM::Folder or dest.is_a? RbVmomi::VIM::VirtualApp
-      raise "Cannot clone_to [#{dest.pretty_path}] - destination must specify a Folder or VirtualApp"
+      raise "Cannot clone_to [#{path.parent}] - destination must specify a Folder or VirtualApp"
     end
 
     params = _clone_params(path.basename, dest, opts)
@@ -57,14 +57,14 @@ class RbVmomi::VIM::VirtualMachine
 
   unless self.method_defined? :guest_ip
     ## backported from rbvmomi 1.8 for rbvmomi 1.5 support
-    def guest_ip 
+    def guest_ip
       g = self.guest
       if g.ipAddress && (g.toolsStatus == "toolsOk" || g.toolsStatus == "toolsOld")
         g.ipAddress
       else
         nil
       end
-    end  
+    end
   end
 
   def move_to!(path)
@@ -89,8 +89,24 @@ class RbVmomi::VIM::VirtualMachine
     tcp_socket && tcp_socket.close
   end
 
+  def wait_for(max=300, interval=2, &block)
+    elapsed = 0
+    start = Time.now
+
+    until (result = yield) || (elapsed > max)
+      sleep interval
+      elapsed = Time.now - start
+    end
+
+    unless result
+      raise "Waited #{max} seconds, giving up."
+    end
+
+    true
+  end
+
   def wait_for_port(port)
-    sleep 2 until port_ready?(port)
+    wait_for { port_ready?(port) }
   end
 
   def stop
@@ -103,6 +119,14 @@ class RbVmomi::VIM::VirtualMachine
 
   def start
     PowerOnVM_Task().wait_for_completion unless runtime.powerState == 'poweredOn'
+  end
+
+  def started?
+    runtime.powerState == 'poweredOn'
+  end
+
+  def ready?
+    ! guest_ip.nil?
   end
 
   def find_property(name)
