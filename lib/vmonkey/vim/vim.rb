@@ -8,13 +8,17 @@ module RbVmomi
     attr_accessor :opts
 
     def self.monkey_connect(opts = nil)
-      opts ||= self.read_yml_opts
+      opts ||= self.default_opts
       vim = self.connect(opts)
       vim.opts = opts
       vim.dc = vim.serviceInstance.find_datacenter(vim.opts[:datacenter]) or raise "Datacenter not found [#{vim.opts[:datacenter]}]"
       vim.cluster = vim.dc.find_compute_resource(vim.opts[:cluster]) or raise "Cluster not found [#{vim.opts[:cluster]}]"
 
       vim
+    end
+
+    def self.default_opts
+      self.read_yml_opts
     end
 
     def folder(path)

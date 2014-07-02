@@ -9,6 +9,10 @@ module VMonkey
   def self.connect(opts = nil)
     RbVmomi::VIM.monkey_connect(opts)
   end
+
+  def self.default_opts
+    RbVmomi::VIM.default_opts
+  end
 end
 
 class String
