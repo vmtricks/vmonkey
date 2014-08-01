@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['brian@duprasville.com', 'dsmith@rallydev.com']
   spec.summary       = %q{ simple to use vsphere methods }
   spec.description   = %q{ simple to use vsphere methods }
-  spec.homepage      = 'https://github.com/something/vmonkey'
+  spec.homepage      = 'https://github.com/vmtricks/vmonkey'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0")
