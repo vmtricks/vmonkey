@@ -108,7 +108,21 @@ describe RbVmomi::VIM do
 
       it { should be_nil }
     end
-
   end
+
+  describe '#datastore' do
+    context 'given an existing datastore' do
+      subject { @ds ||= @monkey.datastore VM_SPEC_OPTS[:datastore] }
+      it { should_not be_nil }
+      its(:name) { should == VM_SPEC_OPTS[:datastore] }
+    end
+  end
+
+  describe '#datastore!' do
+    it 'should raise a RuntimeError given a non-existent datastore' do
+      expect { @monkey.datastore! '/xyzzy' }.to raise_error RuntimeError
+    end
+  end
+
 
 end

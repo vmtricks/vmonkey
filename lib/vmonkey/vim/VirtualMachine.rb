@@ -1,3 +1,5 @@
+using VMonkey
+
 class RbVmomi::VIM::VirtualMachine
 
   def destroy

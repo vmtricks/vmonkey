@@ -1,4 +1,5 @@
 require_relative 'spec_helper'
+using VMonkey
 
 describe RbVmomi::VIM::VirtualMachine do
   before :all do
@@ -167,7 +168,7 @@ describe RbVmomi::VIM::VirtualMachine do
 
     describe '#port_ready?' do
       it 'should be false when the VM is powered off' do
-        expect( @spec_vm.port_ready? 22 ).to be_false
+        expect( @spec_vm.port_ready? 22 ).to be_falsey
       end
     end
 
@@ -177,13 +178,13 @@ describe RbVmomi::VIM::VirtualMachine do
       context 'immediately following start' do
         describe '#ready?' do
           it 'should be false' do
-            expect(@spec_vm.ready?).to be_false
+            expect(@spec_vm.ready?).to be_falsey
           end
         end
 
         describe '#port_ready?' do
           it 'should be false' do
-            expect(@spec_vm.port_ready? 22).to be_false
+            expect(@spec_vm.port_ready? 22).to be_falsey
           end
         end
       end
@@ -193,13 +194,13 @@ describe RbVmomi::VIM::VirtualMachine do
 
         describe '#ready?' do
           it 'should be true' do
-            expect(@spec_vm.ready?).to be_true
+            expect(@spec_vm.ready?).to be_truthy
           end
         end
 
         describe '#port_ready?' do
           it 'should be true' do
-            expect(@spec_vm.port_ready? 22).to be_true
+            expect(@spec_vm.port_ready? 22).to be_truthy
           end
         end
       end
