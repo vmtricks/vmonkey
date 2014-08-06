@@ -1,4 +1,5 @@
 require_relative '../lib/vmonkey'
+require 'rspec/its'
 
 instructions = "
   For the integration tests to run, you need:
@@ -28,6 +29,7 @@ instructions = "
       :vapp_pool_path: /cluster_name/monkey_vapp
       :vapp_path: /path/to/a/vapp
       :customization_spec: name-of-a-cust-spec
+      :datastore: name-of-a-datastore
   "
 
 raise instructions unless File.exists? ENV['VMONKEY_YML']
@@ -40,9 +42,10 @@ raise instructions unless monkey.vm VM_SPEC_OPTS[:template_path]
 raise instructions unless monkey.vapp VM_SPEC_OPTS[:vapp_path]
 raise instructions unless monkey.dc.find_pool VM_SPEC_OPTS[:vapp_pool_path]
 raise instructions unless monkey.customization_spec VM_SPEC_OPTS[:customization_spec]
+raise instructions unless monkey.datastore VM_SPEC_OPTS[:datastore]
 
 RSpec.configure do |config|
-  config.color_enabled = true
-  config.tty = true
-  config.formatter = :documentation
+  config.color      = true
+  config.tty        = true
+  config.formatter  = :documentation
 end

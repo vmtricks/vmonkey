@@ -15,14 +15,16 @@ module VMonkey
   end
 end
 
-class String
-  def parent
-    p = self.split('/')[0...-1].join('/')
-    p == '' ? '/' : p
-  end
+module VMonkey
+  refine String do
+    def parent
+      p = self.split('/')[0...-1].join('/')
+      p == '' ? '/' : p
+    end
 
-  def basename
-    p = self.split('/').last
+    def basename
+      p = self.split('/').last
+    end
   end
 end
 

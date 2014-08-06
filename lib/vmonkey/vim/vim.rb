@@ -65,6 +65,14 @@ module RbVmomi
       dc.vmFolder.traverse path
     end
 
+    def datastore(datastore_name)
+      dc.datastore.find { |ds| ds.info.name.to_s == datastore_name.to_s }
+    end
+
+    def datastore!(datastore_name)
+      datastore(datastore_name) || raise("Datastore not found. [#{datastore_name}]")
+    end
+
     def customization_spec(spec_name)
       return nil if spec_name.nil?
       serviceContent.customizationSpecManager.GetCustomizationSpec(name: spec_name).spec
