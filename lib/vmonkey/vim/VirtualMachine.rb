@@ -76,19 +76,50 @@ class RbVmomi::VIM::VirtualMachine
     move_to(path)
   end
 
-  def port_ready?(port)
+  def port_ready?(port, timeout = 5)
     ip = guest_ip or return false
-    tcp_socket = TCPSocket.new(ip, port)
-    readable = IO.select([tcp_socket], nil, nil, 5)
-    if readable
-      true
-    else
-      false
+
+    ## modified from http://spin.atomicobject.com/2013/09/30/socket-connection-timeout-ruby/
+    addr = Socket.getaddrinfo(ip, nil)
+    sockaddr = Socket.pack_sockaddr_in(port, addr[0][3])
+
+    Socket.new(Socket.const_get(addr[0][0]), Socket::SOCK_STREAM, 0).tap do |socket|
+      socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+
+      begin
+        # Initiate the socket connection in the background. If it doesn't fail
+        # immediately it will raise an IO::WaitWritable (Errno::EINPROGRESS)
+        # indicating the connection is in progress.
+        socket.connect_nonblock(sockaddr)
+
+      rescue IO::WaitWritable
+        # IO.select will block until the socket is writable or the timeout
+        # is exceeded - whichever comes first.
+        if IO.select(nil, [socket], nil, timeout)
+          begin
+            # Verify there is now a good connection
+            socket.connect_nonblock(sockaddr)
+          rescue Errno::EISCONN
+            # Good news everybody, the socket is connected!
+            socket.close
+            return true
+          rescue Errno::ETIMEDOUT, Errno::EPERM, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::ENETUNREACH
+            socket.close
+            return false
+          rescue
+            # An unexpected exception was raised - the connection is no good.
+            raise
+          end
+        else
+          # IO.select returns nil when the socket is not ready before timeout
+          # seconds have elapsed
+          socket.close
+          return false
+        end
+      end
+
+      return false
     end
-  rescue Errno::ETIMEDOUT, Errno::EPERM, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::ENETUNREACH
-    false
-  ensure
-    tcp_socket && tcp_socket.close
   end
 
   def wait_for(max=300, interval=2, &block)
