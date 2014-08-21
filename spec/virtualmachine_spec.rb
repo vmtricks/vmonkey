@@ -59,10 +59,28 @@ describe RbVmomi::VIM::VirtualMachine do
     before(:all) { @spec_vm = @template.clone_to @vm_path }
     after(:all)  { @spec_vm.destroy }
 
-    describe '#clone' do
+    describe '#clone_to' do
       context 'to a Folder' do
         subject { @monkey.vm @vm_path }
         it { should_not be_nil }
+      end
+    end
+
+    describe '#clone_to!' do
+      before(:all) do
+        @other_path = "#{@vm_path}-other"
+      end
+
+      after(:all) do
+        other_vm = @monkey.vm @other_path
+        other_vm.destroy if other_vm
+      end
+
+      it 'should overwrite a VM when given a path of an existing VM' do
+        expect{
+          @other_vm = @spec_vm.clone_to! @other_path
+          @other_vm = @spec_vm.clone_to! @other_path
+        }.to_not raise_error
       end
     end
 
