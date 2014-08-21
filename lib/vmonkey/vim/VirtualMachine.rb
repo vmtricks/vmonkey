@@ -18,6 +18,13 @@ class RbVmomi::VIM::VirtualMachine
     self.CloneVM_Task(params).wait_for_completion
   end
 
+  def clone_to!(path)
+    dest_vm = monkey.vm(path)
+    dest_vm.destroy if dest_vm
+
+    clone_to(path)
+  end
+
   def annotation
     config.annotation
   end
