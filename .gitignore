@@ -21,3 +21,4 @@ tmp
 *.a
 mkmf.log
 .vmonkey
+.DS_Store

@@ -11,6 +11,10 @@ class RbVmomi::VIM::VirtualApp
     self
   end
 
+  def path_with_name
+    "#{vm_folder.name}/#{self.name}"
+  end
+
   def vm_folder
     parentVApp.nil? ? parentFolder : self.parentVApp.vm_folder
   end
@@ -47,7 +51,7 @@ class RbVmomi::VIM::VirtualApp
   end
 
   def clone_to(path, opts = {})
-    dest = monkey.get(path.parent)
+    dest = opts[:vmFolder] || monkey.get(path.parent)
     unless dest.is_a? RbVmomi::VIM::Folder or dest.is_a? RbVmomi::VIM::VirtualApp
       raise "Cannot clone_to [#{path.parent}] - destination must specify a Folder or VirtualApp"
     end
@@ -92,7 +96,7 @@ class RbVmomi::VIM::VirtualApp
               id: name.to_s,
               type: 'string',
               userConfigurable: true,
-              value: value
+              value: value.to_s
               })])
 
     UpdateVAppConfig( spec: vm_config_spec )

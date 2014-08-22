@@ -191,6 +191,8 @@ class RbVmomi::VIM::VirtualMachine
       property_key = name.object_id
     end
 
+    value = value.join(',') if value.is_a?(Array)
+
     vm_config_spec = RbVmomi::VIM.VirtualMachineConfigSpec(
       vAppConfig: RbVmomi::VIM.VmConfigSpec(
         property: [
