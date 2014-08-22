@@ -3,8 +3,16 @@ using VMonkey
 class RbVmomi::VIM::VirtualApp
 
   def destroy
-    self.PowerOffVApp_Task( force: true ).wait_for_completion unless summary.vAppState.downcase == 'stopped'
+    self.PowerOffVApp_Task( force: true ).wait_for_completion unless vapp_state? 'stopped'
     self.Destroy_Task( force: true ).wait_for_completion
+  end
+
+  def vapp_state?(state)
+    summary.vAppState.downcase == state
+  end
+
+  def start
+    PowerOnVApp_Task().wait_for_completion unless vapp_state? 'started'
   end
 
   def vm_pool
