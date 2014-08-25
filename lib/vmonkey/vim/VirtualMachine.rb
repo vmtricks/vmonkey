@@ -1,4 +1,4 @@
-using VMonkey
+using VMonkey unless RUBY_VERSION.split('.')[0] == '1'
 
 class RbVmomi::VIM::VirtualMachine
 

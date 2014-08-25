@@ -1,5 +1,5 @@
 require_relative 'spec_helper'
-using VMonkey
+using VMonkey unless RUBY_VERSION.split('.')[0] == '1'
 
 describe RbVmomi::VIM::VirtualMachine do
   before :all do

@@ -16,14 +16,34 @@ module VMonkey
 end
 
 module VMonkey
-  refine String do
-    def parent
-      p = self.split('/')[0...-1].join('/')
-      p == '' ? '/' : p
-    end
+  def self.string_parent(s)
+    p = s.split('/')[0...-1].join('/')
+    p == '' ? '/' : p
+  end
 
-    def basename
-      p = self.split('/').last
+  def self.string_basename(s)
+    p = s.split('/').last
+  end
+
+  if '1' == RUBY_VERSION.split('.')[0]
+    class ::String
+      def parent
+        VMonkey::string_parent(self)
+      end
+
+      def basename
+        VMonkey::string_basename(self)
+      end
+    end
+  else
+    refine String do
+      def parent
+        VMonkey::string_parent(self)
+      end
+
+      def basename
+        VMonkey::string_basename(self)
+      end
     end
   end
 end
