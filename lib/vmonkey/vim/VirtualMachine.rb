@@ -86,6 +86,7 @@ class RbVmomi::VIM::VirtualMachine
   def port_ready?(port, timeout = 5)
     ip = guest_ip or return false
 
+
     ## modified from http://spin.atomicobject.com/2013/09/30/socket-connection-timeout-ruby/
     addr = Socket.getaddrinfo(ip, nil)
     sockaddr = Socket.pack_sockaddr_in(port, addr[0][3])
@@ -108,10 +109,8 @@ class RbVmomi::VIM::VirtualMachine
             socket.connect_nonblock(sockaddr)
           rescue Errno::EISCONN
             # Good news everybody, the socket is connected!
-            socket.close
             return true
           rescue Errno::ETIMEDOUT, Errno::EPERM, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::ENETUNREACH
-            socket.close
             return false
           rescue
             # An unexpected exception was raised - the connection is no good.
@@ -120,12 +119,13 @@ class RbVmomi::VIM::VirtualMachine
         else
           # IO.select returns nil when the socket is not ready before timeout
           # seconds have elapsed
-          socket.close
           return false
         end
+      ensure
+        socket.close
       end
 
-      return false
+      return true
     end
   end
 
