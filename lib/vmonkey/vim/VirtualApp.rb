@@ -15,6 +15,12 @@ class RbVmomi::VIM::VirtualApp
     PowerOnVApp_Task().wait_for_completion unless vapp_state? 'started'
   end
 
+  def stop
+    return if vapp_state? 'stopped'
+    PowerOffVApp_Task()
+    sleep 2 until vapp_state? 'stopped'
+  end
+
   def vm_pool
     self
   end
@@ -108,6 +114,55 @@ class RbVmomi::VIM::VirtualApp
               })])
 
     UpdateVAppConfig( spec: vm_config_spec )
+  end
+
+  def port_ready?(port, timeout=5)
+    return false if vapp_state? 'stopped'
+    ready=self.vm.all? { |vm| vm.port_ready?(port, 2) }
+    ready
+  end
+
+  def wait_for(max=600, interval=2, &block)
+    elapsed = 0
+    start = Time.now
+
+    until (result = yield) || (elapsed > max)
+      sleep interval
+      elapsed = Time.now - start
+    end
+
+    unless result
+      raise "Waited #{max} seconds, giving up."
+    end
+
+    true
+  end
+
+  def wait_for_port(port)
+    wait_for { port_ready?(port) }
+  end
+
+  def move_to(path)
+    monkey.vapp(path) && raise("VirtualApp already exists. [#{path}]")
+
+    rename = self.name != path.basename
+    to_folder = monkey.folder! path.parent
+    reparent = parent != to_folder
+
+    if reparent
+      Rename_Task(newName: "#{path.basename}-tmp").wait_for_completion if rename
+      to_folder.MoveIntoFolder_Task(list: [self]).wait_for_completion
+      Rename_Task(newName: path.basename).wait_for_completion if rename
+    else
+      Rename_Task(newName: path.basename).wait_for_completion
+    end
+  end
+
+  def move_to!(path)
+    dest_vapp = monkey.vapp(path)
+    dest_vapp.destroy if dest_vapp
+
+    move_to(path)
   end
 
   def _clone_params(vapp_name, dest, opts)
