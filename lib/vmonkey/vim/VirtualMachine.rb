@@ -37,10 +37,10 @@ class RbVmomi::VIM::VirtualMachine
     case args.size
     when 1
       read_property(*args)
-    when 2
+    when 2, 3
       set_property(*args)
     else
-      raise ArgumentError.new("wrong number of arguments (#{args.size} for 1 or 2)")
+      raise ArgumentError.new("wrong number of arguments (#{args.size} for 1, 2 or 3)")
     end
   end
 
@@ -175,10 +175,20 @@ class RbVmomi::VIM::VirtualMachine
 
   def read_property(name)
     p = find_property(name)
-    p.nil? ? nil : p[:value]
+    value = nil
+    unless p.nil?
+      value = p[:value]
+      value = p[:defaultValue] if value.empty?
+    end
+    value
   end
 
-  def set_property(name, value)
+  def set_property(name, value, opts={})
+    opts = {
+        type: 'string',
+        userConfigurable: true
+      }.merge opts
+
     if config.vAppConfig && config.vAppConfig.property
       existing_property = find_property(name)
     end
@@ -198,13 +208,11 @@ class RbVmomi::VIM::VirtualMachine
         property: [
           RbVmomi::VIM.VAppPropertySpec(
             operation: operation,
-            info: {
+            info: opts.merge({
               key: property_key,
               id: name.to_s,
-              type: 'string',
-              userConfigurable: true,
-              value: value
-              })]))
+              value: value.to_s
+              }))]))
 
     if config.vAppConfig.nil? || config.vAppConfig.ovfEnvironmentTransport.empty?
       vm_config_spec[:vAppConfig][:ovfEnvironmentTransport] = ['com.vmware.guestInfo']

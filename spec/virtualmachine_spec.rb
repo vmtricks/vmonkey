@@ -84,31 +84,6 @@ describe RbVmomi::VIM::VirtualMachine do
       end
     end
 
-    describe '#annotation=' do
-      it 'sets the annotation' do
-        @spec_vm.annotation = 'xyzzy'
-        expect(@spec_vm.annotation).to eq 'xyzzy'
-      end
-    end
-
-    describe '#property' do
-      before(:all) do
-        @spec_vm.property :prop, 'xyzzy'
-        @spec_vm.property :prop2, 'abc123'
-        @spec_vm.property :prop2, 'abc456'
-      end
-
-      it { expect(@spec_vm.property :prop).to eq 'xyzzy' }
-      it { expect(@spec_vm.property :prop2).to eq 'abc456' }
-      it { expect(@spec_vm.property :xyzzy).to be_nil }
-    end
-
-    describe '#property!' do
-      it 'should raise a RuntimeError given a path to a non-existent property' do
-        expect { @spec_vm.property! :xyzzy }.to raise_error RuntimeError
-      end
-    end
-
     describe '#move_to' do
       it 'should raise a RuntimeError when given a path of an existing VM' do
         expect { @spec_vm.move_to @vm_path }.to raise_error RuntimeError
