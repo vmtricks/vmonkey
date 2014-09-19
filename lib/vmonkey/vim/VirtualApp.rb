@@ -12,12 +12,12 @@ class RbVmomi::VIM::VirtualApp
   end
 
   def start
-    PowerOnVApp_Task().wait_for_completion unless vapp_state? 'started'
+    self.PowerOnVApp_Task().wait_for_completion unless vapp_state? 'started'
   end
 
   def stop
     return if vapp_state? 'stopped'
-    PowerOffVApp_Task()
+    self.PowerOffVApp_Task( force: true )
     sleep 2 until vapp_state? 'stopped'
   end
 
@@ -37,12 +37,16 @@ class RbVmomi::VIM::VirtualApp
     vm.find { |vm| vm.name == vm_name }
   end
 
+  def find_vm!(vm_name)
+    find_vm(vm_name) || raise("VM not found. [#{vm_name}]")
+  end
+
   def annotation
     vAppConfig.annotation
   end
 
   def annotation=(value)
-    UpdateVAppConfig(spec: {annotation: value})
+    self.UpdateVAppConfig(spec: {annotation: value})
   end
 
   def properties
@@ -53,10 +57,10 @@ class RbVmomi::VIM::VirtualApp
     case args.size
     when 1
       read_property(*args)
-    when 2
+    when 2, 3
       set_property(*args)
     else
-      raise ArgumentError.new("wrong number of arguments (#{args.size} for 1 or 2)")
+      raise ArgumentError.new("wrong number of arguments (#{args.size} for 1, 2 or 3)")
     end
   end
 
@@ -85,10 +89,20 @@ class RbVmomi::VIM::VirtualApp
 
   def read_property(name)
     p = find_property(name)
-    p.nil? ? nil : p[:value]
+    value = nil
+    unless p.nil?
+      value = p[:value]
+      value = p[:defaultValue] if value.empty?
+    end
+    value
   end
 
-  def set_property(name, value)
+  def set_property(name, value, opts={})
+    opts = {
+        type: 'string',
+        userConfigurable: true
+      }.merge opts
+
     if vAppConfig.property
       existing_property = find_property(name)
     end
@@ -101,19 +115,17 @@ class RbVmomi::VIM::VirtualApp
       property_key = name.object_id
     end
 
-    vm_config_spec = RbVmomi::VIM.VAppConfigSpec(
+    vapp_config_spec = RbVmomi::VIM.VAppConfigSpec(
         property: [
           RbVmomi::VIM.VAppPropertySpec(
             operation: operation,
-            info: {
+            info: opts.merge({
               key: property_key,
               id: name.to_s,
-              type: 'string',
-              userConfigurable: true,
               value: value.to_s
-              })])
+              }))])
 
-    UpdateVAppConfig( spec: vm_config_spec )
+    self.UpdateVAppConfig( spec: vapp_config_spec )
   end
 
   def port_ready?(port, timeout=5)
@@ -150,11 +162,11 @@ class RbVmomi::VIM::VirtualApp
     reparent = parent != to_folder
 
     if reparent
-      Rename_Task(newName: "#{path.basename}-tmp").wait_for_completion if rename
+      self.Rename_Task(newName: "#{path.basename}-tmp").wait_for_completion if rename
       to_folder.MoveIntoFolder_Task(list: [self]).wait_for_completion
-      Rename_Task(newName: path.basename).wait_for_completion if rename
+      self.Rename_Task(newName: path.basename).wait_for_completion if rename
     else
-      Rename_Task(newName: path.basename).wait_for_completion
+      self.Rename_Task(newName: path.basename).wait_for_completion
     end
   end
 

@@ -35,25 +35,6 @@ describe RbVmomi::VIM::VirtualApp do
       end
     end
 
-    describe '#annotation=' do
-      it 'sets the annotation' do
-        @spec_vapp.annotation = 'xyzzy'
-        expect(@spec_vapp.annotation).to eq 'xyzzy'
-      end
-    end
-
-    describe '#property' do
-      before(:all) do
-        @spec_vapp.property :prop, 'xyzzy'
-        @spec_vapp.property :prop2, 'abc123'
-        @spec_vapp.property :prop2, 'abc456'
-      end
-
-      it { expect(@spec_vapp.property :prop).to eq 'xyzzy' }
-      it { expect(@spec_vapp.property :prop2).to eq 'abc456' }
-      it { expect(@spec_vapp.property :xyzzy).to be_nil }
-    end
-
     describe '#move_to' do
       it 'should raise a RuntimeError when given a path of an existing vApp' do
         expect { @spec_vapp.move_to @spec_vapp_path }.to raise_error RuntimeError
@@ -137,6 +118,7 @@ describe RbVmomi::VIM::VirtualApp do
 
     context 'that has had #start called' do
       before(:all) { @spec_vapp.start }
+      after(:all) { @spec_vapp.stop }
 
       context 'immediately following start' do
         describe '#port_ready?' do
@@ -156,7 +138,6 @@ describe RbVmomi::VIM::VirtualApp do
         end
       end
 
-      after(:all) { @spec_vapp.stop }
     end
 
   end
