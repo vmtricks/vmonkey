@@ -47,5 +47,34 @@ describe RbVmomi::VIM::VirtualApp do
       it { expect(@spec_vapp.find_property(:ip_prop_with_default)[:type]).to eq 'ip' }
     end
 
+    describe '#set_properties' do
+      before(:all) do
+        @spec_vapp.set_properties({
+            multi_prop: 'xyzzy',
+            multi_ip_prop: { value: '1.1.1.1', type: 'ip' },
+            multi_ip_prop_with_default: { value: nil, type: 'ip', defaultValue: '0.0.0.0' }
+          })
+      end
+
+      it 'should set multiple properies from scratch' do
+        expect(@spec_vapp.property :multi_prop).to eq 'xyzzy'
+        expect(@spec_vapp.property :multi_ip_prop).to eq '1.1.1.1'
+        expect(@spec_vapp.property :multi_ip_prop_with_default).to eq '0.0.0.0'
+      end
+
+      it 'should overwrite multiple properies that already exist' do
+        @spec_vapp.set_properties({
+            multi_prop: 'abc123',
+            multi_ip_prop: '2.2.2.2',
+            multi_ip_prop_with_default: { value: '3.3.3.3', type: 'string' }
+          })
+
+        expect(@spec_vapp.property :multi_prop).to eq 'abc123'
+        expect(@spec_vapp.property :multi_ip_prop).to eq '2.2.2.2'
+        expect(@spec_vapp.find_property(:multi_ip_prop)[:type]).to eq 'ip'
+        expect(@spec_vapp.property :multi_ip_prop_with_default).to eq '3.3.3.3'
+        expect(@spec_vapp.find_property(:multi_ip_prop_with_default)[:type]).to eq 'string'
+      end
+    end
   end
 end
