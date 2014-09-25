@@ -28,6 +28,7 @@ describe RbVmomi::VIM::VirtualApp do
       before(:all) do
         @other_path = "#{@spec_vapp_path}-other"
         @other_vapp = @spec_vapp.clone_to @other_path
+        @other_vapp.property :clone_to_bang, 'before'
       end
 
       after(:all) do
@@ -37,7 +38,9 @@ describe RbVmomi::VIM::VirtualApp do
 
       it 'should overwrite a vApp when given a path of an existing vApp' do
         @spec_vapp.clone_to! @other_path
-        expect(@monkey.vapp @other_path).to_not be_nil
+        after_vapp = @monkey.vapp @other_path
+        expect(after_vapp).to_not be_nil
+        expect(after_vapp.property :clone_to_bang).to be_nil
       end
     end
   end
