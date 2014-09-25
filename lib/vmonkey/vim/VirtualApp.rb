@@ -83,6 +83,13 @@ class RbVmomi::VIM::VirtualApp
     self.CloneVApp_Task(params).wait_for_completion
   end
 
+  def clone_to!(path, opts = {})
+    dest_vapp = monkey.vapp(path)
+    dest_vapp.destroy if dest_vapp
+
+    clone_to(path)
+  end
+
   def find_property(name)
     vAppConfig.property.find { |p| p.props[:id] == name.to_s  }
   end
@@ -97,11 +104,13 @@ class RbVmomi::VIM::VirtualApp
     value
   end
 
-  def set_property(name, value, opts={})
-    opts = {
+  def set_property(name, value, requested_opts={})
+    default_opts = {
         type: 'string',
         userConfigurable: true
-      }.merge opts
+        }
+
+    existing_opts = {}
 
     if vAppConfig.property
       existing_property = find_property(name)
@@ -109,11 +118,14 @@ class RbVmomi::VIM::VirtualApp
 
     if existing_property
       operation = 'edit'
+      existing_opts = existing_property.props
       property_key = existing_property.props[:key]
     else
       operation = 'add'
       property_key = name.object_id
     end
+
+    opts = default_opts.merge(existing_opts).merge(requested_opts)
 
     vapp_config_spec = RbVmomi::VIM.VAppConfigSpec(
         property: [
@@ -126,6 +138,20 @@ class RbVmomi::VIM::VirtualApp
               }))])
 
     self.UpdateVAppConfig( spec: vapp_config_spec )
+  end
+
+  def set_properties(props)
+    props.each do |key, v|
+      if v.is_a?(Hash)
+        value = v.delete :value
+        opts = v
+      else
+        value = v
+        opts = {}
+      end
+
+      set_property key, value, opts
+    end
   end
 
   def port_ready?(port, timeout=5)

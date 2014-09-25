@@ -28,13 +28,6 @@ describe RbVmomi::VIM::VirtualApp do
     before(:all) { @spec_vapp = @vapp.clone_to @spec_vapp_path }
     after(:all)  { @spec_vapp.destroy }
 
-    describe '#clone' do
-      context 'to a Folder' do
-        subject { @monkey.vapp @spec_vapp_path }
-        it { should_not be_nil }
-      end
-    end
-
     describe '#move_to' do
       it 'should raise a RuntimeError when given a path of an existing vApp' do
         expect { @spec_vapp.move_to @spec_vapp_path }.to raise_error RuntimeError
