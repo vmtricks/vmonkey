@@ -1,3 +1,3 @@
 module Vmonkey
-  VERSION = '0.9.0'
+  VERSION = '0.10.0.pre'
 end

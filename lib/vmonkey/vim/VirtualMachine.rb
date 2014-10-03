@@ -221,6 +221,24 @@ class RbVmomi::VIM::VirtualMachine
     ReconfigVM_Task( spec: vm_config_spec ).wait_for_completion
   end
 
+  # def network
+  #   nics = self.config.hardware.device.select{ |d| d.is_a? RbVmomi::VIM.VirtualEthernetCard.class }
+  #   nics.first.backing.deviceName if nics.first
+  # end
+
+  def network=(network_name)
+    nics = self.config.hardware.device.select{ |d| d.is_a? RbVmomi::VIM.VirtualEthernetCard.class }
+    nics.each do |nic|
+      unless nic[:backing][:deviceName] == network_name
+        nic[:backing] = RbVmomi::VIM.VirtualEthernetCardNetworkBackingInfo(deviceName: network_name)
+        change_spec = RbVmomi::VIM.VirtualMachineConfigSpec( deviceChange: [
+          RbVmomi::VIM.VirtualDeviceConfigSpec(device: nic, operation: 'edit')
+          ])
+        self.ReconfigVM_Task(spec: change_spec).wait_for_completion
+      end
+    end
+  end
+
   def _clone_params(vm_name, dest, opts)
     {
       name: vm_name,

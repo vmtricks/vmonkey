@@ -203,6 +203,12 @@ class RbVmomi::VIM::VirtualApp
     move_to(path)
   end
 
+  def network=(network_name)
+    self.vm.each do |vm|
+      vm.network = network_name
+    end
+  end
+
   def _clone_params(vapp_name, dest, opts)
     {
       name: vapp_name,
