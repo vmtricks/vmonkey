@@ -1,6 +1,6 @@
 # VMonkey
 
-VMonkey is a cheeky little feller who wants so very badly to make interacintg with vSphere more enjoyable.  Let VMonkey fetch your VMs, clone your templates, set your properties, and more.  VMonkey tinkers around in the uglier parts of the vSphere API so you don't have to.  Enjoy!
+VMonkey is a cheeky little feller who wants so very badly to make interacting with vSphere more enjoyable.  Let VMonkey fetch your VMs, clone your templates, set your properties, and more.  VMonkey tinkers around in the uglier parts of the vSphere API so you don't have to.  Enjoy!
 
 ## Installation
 
@@ -69,7 +69,7 @@ vm.annotation
 vm.annotation = 'VMonkey is hot'
 
 vm.move_to  '/path/to/some_folder/clone_name' # moves the VM or raises if the destination exists
-vm.move_to! '/path/to/some_folder/clone_name' # moves the VM, overwrting the detinsation VM if necessary
+vm.move_to! '/path/to/some_folder/clone_name' # moves the VM, overwriting the destination VM if necessary
 
 vm.clone_to '/path/to/some_folder/clone_name' # clones the VM to a Folder
 vm.clone_to '/path/to/some_vapp/clone_name'   # clones the VM to a VirtualApp
