@@ -37,6 +37,16 @@ module RbVmomi
       vm(path) || raise("VirtualMachine not found. [#{path}]")
     end
 
+    def template(path)
+      t = vm path
+      return t if t && t.config && t.config.template
+      return nil
+    end
+
+    def template!(path)
+      template(path) || raise("Template not found. [#{path}]")
+    end
+
     def vm_by_uuid(uuid)
       dc.vmFolder.findByUuid uuid, RbVmomi::VIM::VirtualMachine, dc
     end
