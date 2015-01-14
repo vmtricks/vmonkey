@@ -25,4 +25,20 @@ class RbVmomi::VIM::Folder
     self.childEntity.grep(RbVmomi::VIM::VirtualMachine).select { |v| v.config.nil? || (v.config && !v.config.template) }
   end
 
+  def folder(path)
+    self.traverse path, RbVmomi::VIM::Folder
+  end
+
+  def folder!(path)
+    folder(path) || raise("Folder not found. [#{path}]")
+  end
+
+  def mk_folder(path)
+    self.traverse path, RbVmomi::VIM::Folder, true
+  end
+
+  def destroy
+    self.Destroy_Task.wait_for_completion
+  end
+
 end
