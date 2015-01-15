@@ -21,6 +21,8 @@ class RbVmomi::VIM::VirtualMachine
   def clone_to!(path)
     dest_vm = monkey.vm(path)
     dest_vm.destroy if dest_vm
+    
+    monkey.folder('/').mk_folder(path.parent) unless path.parent.to_s.empty?
 
     clone_to(path)
   end
@@ -79,6 +81,8 @@ class RbVmomi::VIM::VirtualMachine
   def move_to!(path)
     dest_vm = monkey.vm(path)
     dest_vm.destroy if dest_vm
+
+    monkey.folder('/').mk_folder(path.parent) unless path.parent.to_s.empty?
 
     move_to(path)
   end
