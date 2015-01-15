@@ -17,6 +17,10 @@ class RbVmomi::VIM::Folder
     x if x.is_a? type
   end
 
+  def folders
+    self.childEntity.grep(RbVmomi::VIM::Folder)
+  end
+
   def templates
     self.childEntity.grep(RbVmomi::VIM::VirtualMachine).select { |v| v.config && v.config.template }
   end
