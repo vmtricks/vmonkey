@@ -1,3 +1,5 @@
+using VMonkey unless RUBY_VERSION.split('.')[0] == '1'
+
 class RbVmomi::VIM::Folder
   def vm_pool
     monkey.cluster.resourcePool
@@ -39,6 +41,10 @@ class RbVmomi::VIM::Folder
 
   def mk_folder(path)
     self.traverse path, RbVmomi::VIM::Folder, true
+  end
+
+  def mk_parent_folder(path)
+    mk_folder path.parent unless path.parent.to_s.empty?
   end
 
   def destroy
