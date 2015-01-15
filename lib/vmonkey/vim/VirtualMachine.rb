@@ -153,6 +153,10 @@ class RbVmomi::VIM::VirtualMachine
     wait_for { port_ready?(port) }
   end
 
+  def kill
+    PowerOffVM_Task().wait_for_completion unless runtime.powerState == 'poweredOff'
+  end
+
   def stop
     return if runtime.powerState == 'poweredOff'
     ShutdownGuest()
