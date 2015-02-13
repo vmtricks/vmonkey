@@ -264,7 +264,8 @@ class RbVmomi::VIM::VirtualMachine
       template: false
     )
 
-    clone_spec.config = RbVmomi::VIM.VirtualMachineConfigSpec(deviceChange: Array.new)
+    device_change = opts[:deviceChange] || Array.new
+    clone_spec.config = RbVmomi::VIM.VirtualMachineConfigSpec(deviceChange: device_change)
 
     clone_spec.customization = monkey.customization_spec(opts[:customization_spec])
     clone_spec.config.annotation = opts[:config][:annotation]
