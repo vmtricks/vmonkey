@@ -52,6 +52,40 @@ describe RbVmomi::VIM::VirtualMachine do
       it { expect(subject[:spec].config.annotation).to eq 'an annotation' }
       it { expect(subject[:spec].config.numCPUs).to eq 3 }
       it { expect(subject[:spec].config.memoryMB).to eq 1024 }
+      it { expect(subject[:spec].config.deviceChange.length).to be 0}
+    end
+
+    context 'with deviceChange' do
+      subject do
+        @params ||=
+          @template._clone_params(
+            @vm_path.basename,
+            @monkey.get(@vm_path.parent),
+            customization_spec: VM_SPEC_OPTS[:customization_spec],
+            config: {
+              annotation: 'an annotation',
+              num_cpus: 3,
+              memory_mb: 1024
+            },
+            deviceChange: [
+              {
+                :operation => :add,
+                :device => RbVmomi::VIM.VirtualE1000(
+                  :key => 0,
+                  :deviceInfo => {
+                    :label => 'VM network',
+                    :summary => 'VM network'
+                  },
+                  :backing => RbVmomi::VIM.VirtualEthernetCardNetworkBackingInfo(
+                    :deviceName => 'VM network'
+                  ),
+                  :addressType => 'automatic'
+                )
+              }
+              ])
+      end
+
+      it { expect(subject[:spec].config.deviceChange[0][:operation]).to be :add}
     end
   end
 
