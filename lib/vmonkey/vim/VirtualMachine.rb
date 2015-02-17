@@ -259,7 +259,10 @@ class RbVmomi::VIM::VirtualMachine
     opts[:config] ||= {}
 
     clone_spec = RbVmomi::VIM.VirtualMachineCloneSpec(
-      location: RbVmomi::VIM.VirtualMachineRelocateSpec(pool: dest.vm_pool),
+      location: RbVmomi::VIM.VirtualMachineRelocateSpec({
+        pool: dest.vm_pool,
+        datastore: opts[:datastore]
+        }),
       powerOn: false,
       template: false
     )
