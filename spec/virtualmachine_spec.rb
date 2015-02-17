@@ -44,7 +44,8 @@ describe RbVmomi::VIM::VirtualMachine do
             config: {
               annotation: 'an annotation',
               num_cpus: 3,
-              memory_mb: 1024
+              memory_mb: 1024,
+              files: { :vmPathName => "#{VM_SPEC_OPTS[:datastore]} vmonkey-test" }
             })
       end
 
@@ -52,6 +53,7 @@ describe RbVmomi::VIM::VirtualMachine do
       it { expect(subject[:spec].config.annotation).to eq 'an annotation' }
       it { expect(subject[:spec].config.numCPUs).to eq 3 }
       it { expect(subject[:spec].config.memoryMB).to eq 1024 }
+      it { expect(subject[:spec].config.files[:vmPathName]). to eq "#{VM_SPEC_OPTS[:datastore]} vmonkey-test" }
       it { expect(subject[:spec].config.deviceChange.length).to be 0}
     end
 

@@ -21,7 +21,7 @@ class RbVmomi::VIM::VirtualMachine
   def clone_to!(path)
     dest_vm = monkey.vm(path)
     dest_vm.destroy if dest_vm
-    
+
     monkey.folder('/').mk_folder(path.parent) unless path.parent.to_s.empty?
 
     clone_to(path)
@@ -271,6 +271,7 @@ class RbVmomi::VIM::VirtualMachine
     clone_spec.config.annotation = opts[:config][:annotation]
     clone_spec.config.numCPUs = opts[:config][:num_cpus]
     clone_spec.config.memoryMB = opts[:config][:memory_mb]
+    clone_spec.config.files = opts[:config][:files]
 
     clone_spec
   end
