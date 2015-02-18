@@ -57,6 +57,18 @@ describe RbVmomi::VIM::VirtualMachine do
       it { expect(subject[:spec].config.deviceChange.length).to be 0}
     end
 
+    context 'with datastore change' do
+      subject do
+        @params ||=
+          @template._clone_params(
+            @vm_path.basename,
+            @monkey.get(@vm_path.parent),
+            datastore: @monkey.datastore(VM_SPEC_OPTS[:datastore]))
+      end
+
+      it { expect(subject[:spec][:location].datastore).to_not be_nil }
+    end
+
     context 'with deviceChange' do
       subject do
         @params ||=
