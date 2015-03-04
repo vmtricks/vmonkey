@@ -257,6 +257,7 @@ class RbVmomi::VIM::VirtualMachine
 
   def _clone_spec(dest, opts)
     opts[:config] ||= {}
+    opts[:vm_config_spec] ||= {}
 
     clone_spec = RbVmomi::VIM.VirtualMachineCloneSpec(
       location: RbVmomi::VIM.VirtualMachineRelocateSpec({
@@ -270,11 +271,22 @@ class RbVmomi::VIM::VirtualMachine
     device_change = opts[:deviceChange] || Array.new
     clone_spec.config = RbVmomi::VIM.VirtualMachineConfigSpec(deviceChange: device_change)
 
-    clone_spec.customization = monkey.customization_spec(opts[:customization_spec])
+    if opts[:customization_spec].is_a? String
+      clone_spec.customization = monkey.customization_spec(opts[:customization_spec])
+    else
+      clone_spec.customization = opts[:customization_spec]
+    end
+
     clone_spec.config.annotation = opts[:config][:annotation]
     clone_spec.config.numCPUs = opts[:config][:num_cpus]
     clone_spec.config.memoryMB = opts[:config][:memory_mb]
     clone_spec.config.files = opts[:config][:files]
+
+    #in the long run, this replaces the opts[:config] vals and just sets via the code below
+    opts[:vm_config_spec].each do |key, value|
+      setter = "#{key}=".to_sym
+      clone_spec.config.send(setter, value)
+    end
 
     clone_spec
   end

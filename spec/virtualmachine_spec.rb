@@ -41,6 +41,10 @@ describe RbVmomi::VIM::VirtualMachine do
             @vm_path.basename,
             @monkey.get(@vm_path.parent),
             customization_spec: VM_SPEC_OPTS[:customization_spec],
+            vm_config_spec: {
+              guestId: 'rhel5_64Guest',
+              nestedHVEnabled: true
+            },
             config: {
               annotation: 'an annotation',
               num_cpus: 3,
@@ -55,6 +59,8 @@ describe RbVmomi::VIM::VirtualMachine do
       it { expect(subject[:spec].config.memoryMB).to eq 1024 }
       it { expect(subject[:spec].config.files[:vmPathName]). to eq "#{VM_SPEC_OPTS[:datastore]} vmonkey-test" }
       it { expect(subject[:spec].config.deviceChange.length).to be 0}
+      it { expect(subject[:spec].config.guestId).to eq 'rhel5_64Guest'}
+      it { expect(subject[:spec].config.nestedHVEnabled).to be true}
     end
 
     context 'with datastore change' do
